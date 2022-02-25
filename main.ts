@@ -274,7 +274,7 @@ function startup() {
         false,
         false
     )
-    hardware.setGyroSensor(sensors.gyro2);
+    hardware.setGyroSensor(sensors.gyro2, true);
     hardware.setColorSensor(sensors.color1);
 
     motors.mediumA.setRegulated(true);

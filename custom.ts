@@ -202,11 +202,12 @@ namespace Helper {
 //% weight=130 color=#ff0000 icon=''
 namespace hardware {
     let gyro: sensors.GyroSensor = null;
-    //    let gyroInverse: boolean = false
+    let gyroInverse: boolean = false
 
     //% block
-    export function setGyroSensor(gyroSensor: sensors.GyroSensor): void {
+    export function setGyroSensor(gyroSensor: sensors.GyroSensor, inverse: boolean=false): void {
         gyro = gyroSensor;
+        gyroInverse = inverse;
 
         gyro.setMode(GyroSensorMode.Angle);
 
@@ -251,6 +252,7 @@ namespace hardware {
     export function readGyroAngle(): number {
         if (gyro == null) return 0;
         let angle: number = gyro.angle();
+        if (gyroInverse) angle *= -1;
         return angle
     }
 
