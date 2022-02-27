@@ -31,7 +31,7 @@ namespace Test {
 
     function assertNew(actual: string): void {
         assert++;
-        logger.push('assertEquals(' + assert + '): ' + actual);
+        debug('assertEquals(' + assert + '): ' + actual);
     }
 
     function assertError(error: string[], str?: string): void {
@@ -43,7 +43,7 @@ namespace Test {
 
         brick.clearScreen();
         error.forEach(function (value: string, index: number) {
-            logger.push(value);
+            debug(value);
             brick.showString(value, pos++);
         })
 
@@ -78,10 +78,19 @@ namespace Test {
 
 let logger: string[] = [];
 
+let DEBUG = false;
+
+function debug(str: string): void {
+    if (DEBUG) {
+        logger.push(str);
+    }
+}
+
 let loggerLastTimestamp: number = 0;
-function loggerTS(log: string): void {
+function debugTS(log: string): void {
     const timestamp = control.millis();
-    logger.push('' + timestamp + ' (' + (timestamp - loggerLastTimestamp) + '): ' + log);
+    debug('' + timestamp + ' (' + (timestamp - loggerLastTimestamp) + '): ' + log);
+
     loggerLastTimestamp = timestamp;
 }
 
@@ -349,13 +358,13 @@ namespace hardware {
             // motors.stopAll();
 
             this.motorSync.stop();
+
+            this.lastSpeed = 0;
+            this.lastSteering = 0;
         }
 
         reset(): void {
             this.stop();
-
-            this.lastSpeed = 0;
-            this.lastSteering = 0;
 
             this.motorSync.setRegulated(true);
 
@@ -422,7 +431,7 @@ namespace hardware {
                     steering = 0
                 }
 
-                loggerTS(Math.roundDecimal(speed) + '/' + Math.roundDecimal(steering));
+                debugTS(Math.roundDecimal(speed) + '/' + Math.roundDecimal(steering));
 
                 this.lastSpeed = speed
                 this.lastSteering = steering
@@ -656,7 +665,7 @@ namespace robi {
             if (Math.abs(this.currentPos[M2]) < 1 * cm) return;
             if (Math.takeSign(this.currentPos[M2]) == Math.takeSign(this.targetPos[M2])) return;
 
-            logger.push('ERROR: directionCheck failed');
+            debug('ERROR: directionCheck failed');
             brick.setStatusLight(StatusLight.RedPulse);
         }
 
@@ -706,9 +715,9 @@ namespace robi {
         let p2 = (100 - rotate) / 100;
 
         /*
-        logger.push('Angle: ' + angle + ' / ' + Helper.normAngle(angle));
-        logger.push('Rotate: ' + p1 + ' / ' + p2);
-        logger.push('Bogen: ' + bogen);
+        debug('Angle: ' + angle + ' / ' + Helper.normAngle(angle));
+        debug('Rotate: ' + p1 + ' / ' + p2);
+        debug('Bogen: ' + bogen);
         */
 
         target[M1] = distance + (bogen / 2 * p1);
@@ -738,7 +747,7 @@ namespace robi {
             Helligkeit = Math.min(Helligkeit, Weiss)
             Helligkeit = Math.max(Helligkeit, Schwarz)
             Helligkeit = (Helligkeit * 2 - Schwarz - Weiss) * (100 / (Weiss - Schwarz))
-            logger.push('Helligkeit: ' + Helligkeit);
+            debug('Helligkeit: ' + Helligkeit);
 
             if (this.stearing !== this.stearing) { // NaN
                 this.stearing = 0
@@ -777,17 +786,17 @@ namespace robi {
 
             let gyroAngle = hardware.readGyroAngle();
 
-            logger.push('gyroAngle: ' + gyroAngle);
+            debug('gyroAngle: ' + gyroAngle);
 
             if (this.stearing !== this.stearing) { // NaN
                 this.stearing = 0
             }
 
             const diffAngle = Helper.normAngle(Helper.normAngle(gyroAngle) - Helper.normAngle(this.gyroAngle))
-            logger.push('diffAngle: ' + diffAngle);
+            debug('diffAngle: ' + diffAngle);
 
             let newStearing = -diffAngle / 180 * 200
-            logger.push('newStearing: ' + newStearing);
+            debug('newStearing: ' + newStearing);
 
             if (this.targetSpeed < 0) newStearing *= -1;
 
@@ -898,7 +907,7 @@ namespace robi {
 
         pause(500);
 
-        logger.push('START Program');
+        debug('START Program');
 
         currentAction = 0;
         live = false;
@@ -921,7 +930,7 @@ namespace robi {
 
         if (!Math.between(currentAction, 0, actions.length)) {
             run = false;
-            logger.push('currentAction ' + currentAction + ' not between 0 and ' + actions.length);
+            debug('currentAction ' + currentAction + ' not between 0 and ' + actions.length);
             return;
         }
 
@@ -929,7 +938,7 @@ namespace robi {
         actions[currentAction].info()
 
         if (nextAction) {
-            logger.push('' + currentAction + ': ' + actions[currentAction].toString());
+            debug('' + currentAction + ': ' + actions[currentAction].toString());
 
             let rawPos = actions[currentAction].rawPos;
 
@@ -974,12 +983,15 @@ namespace robi {
 
         if (msg == null) msg = 'ABORT';
 
-        logger.push(msg);
+        debug(msg);
         brick.showString(' >> ' + msg + ' <<', 1)
 
         menu.setMenu('done');
         menu.showMenu()
         brick.setStatusLight(StatusLight.Orange)
+
+        pause(500);
+        hardware.motorConfig.stop();
     }
 }
 

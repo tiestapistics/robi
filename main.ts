@@ -15,13 +15,23 @@ function showBatteryLevel(): void {
 function showSerialNumber(): void {
     brick.clearScreen();
 
-    const serialNumber: number = control.deviceSerialNumber();
-    brick.showString('Device Serial Number:', 2)
-    brick.showString('' + serialNumber, 3)
-
     const firmwareVersion: string = control.deviceFirmwareVersion();
-    brick.showString('Firmware Version:', 5)
-    brick.showString('' + firmwareVersion, 6)
+    brick.showString('Firmware Version:', 2)
+    brick.showString('' + firmwareVersion, 3)
+
+    const serialNumber: number = control.deviceSerialNumber();
+    brick.showString('Device Serial Number:', 4)
+    brick.showString('' + serialNumber, 5)
+
+    /*
+    const longSerialNumber: string = control.deviceLongSerialNumber().toString();
+    brick.showString('Long Device Serial Number:', 6)
+    brick.showString('' + longSerialNumber, 7)
+
+    const dalVersion: string = control.deviceDalVersion();
+    brick.showString('DAL Version:', 8)
+    brick.showString('' + dalVersion, 9)
+    */
 }
 
 function showGyro(): void {
@@ -66,13 +76,17 @@ function PAUSE(): void {
     pause(3 * 1000)
 }
 
+function MotorA_reset(): void {
+    motors.mediumA.reset();
+}
+
 function MotorA(action: string, n?: number): void {
     motors.mediumA.setBrake(true);
     motors.mediumA.run(10, n, MoveUnit.Degrees);
     motors.mediumA.pauseUntilReady();
     //motors.mediumA.pauseUntilStalled();
 
-    pause(1 * 1000);
+//    pause(1 * 1000);
 
     motors.mediumA.setBrake(false);
     motors.mediumA.stop();
@@ -80,6 +94,7 @@ function MotorA(action: string, n?: number): void {
 
 function programJJ(): void {
     robi.actionClean();
+    robi.actionCallback("reset", MotorA_reset);
     robi.actionCallback("hoch", MotorA, 180);
     robi.actionFollowGyro(-90, -45);
     robi.actionCallback("runter", MotorA, -180);
@@ -89,6 +104,7 @@ function programJJ(): void {
 
 function programDaniel(): void {
     robi.actionClean();
+    robi.actionCallback("reset", MotorA_reset);
     robi.actionFollowGyro(45, 20);
     robi.actionFollowColor(25);
     robi.actionFollowGyro(0, 15);
@@ -111,6 +127,7 @@ function programDaniel(): void {
 
 function programDaniel2(): void {
     robi.actionClean();
+    robi.actionCallback("reset", MotorA_reset);
 
     robi.actionFollowGyro(40, 47);
     robi.actionCallback("hoch", MotorA, 90);
@@ -133,7 +150,8 @@ function programDaniel2(): void {
 
 function programNoah(): void {
     robi.actionClean();
-    robi.actionFollowGyro(45, 23);
+    robi.actionCallback("reset", MotorA_reset);
+robi.actionFollowGyro(45, 23);
     robi.actionFollowGyro(0, 15);
     // robi.actionFollowGyro(90, 10);
     // robi.actionRotate(-90, 45);
@@ -156,6 +174,7 @@ function programNoah(): void {
 
 function programDavid(): void {
     robi.actionClean();
+    robi.actionCallback("reset", MotorA_reset);
     robi.actionCallback("hoch", MotorA, 180);
     robi.actionFollowColor(160);
     robi.actionFollowGyro(-90, 40);
