@@ -273,22 +273,20 @@ namespace hardware {
     export function setColorSensor(colorSensor: sensors.ColorSensor, mode: ColorSensorMode = null): void {
         color = colorSensor;
 
-        if (mode == null) mode = ColorSensorMode.ReflectedLightIntensity
+        // color.reset();
+
+        /*
+        if (mode == null) mode = ColorSensorMode.ReflectedLightIntensity;
         color.setMode(mode);
+        */
 
-        color.calibrateLight(1, 1)
-    }
-
-    //% block
-    export function readColor(val: number): number {
-        if (color == null) return 0;
-        return color.light(val);
+        // color.calibrateLight(1, 1)
     }
 
     //% block
     export function readReflectedLight(): number {
         if (color == null) return 0;
-        return color.reflectedLight()
+        return color.light(LightIntensityMode.Reflected);
     }
 
     // ---
@@ -459,9 +457,9 @@ namespace hardware {
 namespace robi {
     const ramp = 50 * cm;
 
-    export enum FollowType {
-        left = 0,
-        right,
+    export enum FollowLineType {
+        left    = 0, // black is on the left side
+        right   = 1, // black is on the right side
     }
 
     class MotorAction {
@@ -684,11 +682,7 @@ namespace robi {
     //% block
     export function actionClean(): void {
         actions = [];
-    }
-
-    //% block
-    export function actionStop(): void {
-        actions.push(new MotorAction('Stop', 0))
+        stopActions = [];
     }
 
     //% block
@@ -735,13 +729,13 @@ namespace robi {
 
     class MotorActionFollowColor extends MotorAction {
         protected stearing: number;
-        public follow: FollowType;
+        public follow: FollowLineType;
 
         getSteering(): number {
             const Faktor = 0.2
 
             const Schwarz = 5
-            const Weiss = 55
+            const Weiss = 75
 
             let Helligkeit = hardware.readReflectedLight()
             Helligkeit = Math.min(Helligkeit, Weiss)
@@ -754,7 +748,7 @@ namespace robi {
             }
 
             let newStearing: number = Helligkeit / (Weiss - Schwarz) * 35;
-            newStearing *= (this.follow === FollowType.left) ? -1 : 1;
+            newStearing *= (this.follow === FollowLineType.left) ? -1 : 1;
 
             if (this.targetSpeed < 0) newStearing *= -1;
 
@@ -768,8 +762,8 @@ namespace robi {
     }
 
     //% block
-    export function actionFollowColor(distance: number, follow: FollowType = null): void {
-        if (follow == null) follow = FollowType.right;
+    export function actionFollowColor(distance: number, follow: FollowLineType = null): void {
+        if (follow == null) follow = FollowLineType.right;
 
         let speed = Math.takeSign(distance) * 25;
         let motorAction = new MotorActionFollowColor('FollowC', speed, [distance, distance]);
@@ -852,6 +846,15 @@ namespace robi {
     //% block
     export function actionCallback(name: string, callbackFn: (action?: string, n?: number, s?: string) => void, n?: number, s?: string): void {
         actions.push(new MotorActionCallback(name, callbackFn, n, s))
+    }
+
+    // ---
+
+    let stopActions: (() => void)[] = [];
+
+    //% block
+    export function actionStop(callbackFn: () => void): void {
+        stopActions.push(callbackFn);
     }
 
     // ---
@@ -980,6 +983,10 @@ namespace robi {
 
         // motors.stopAll();
         hardware.motorConfig.stop();
+
+        stopActions.forEach(function (callbackFn: () => void) {
+            callbackFn();
+        });
 
         if (msg == null) msg = 'ABORT';
 

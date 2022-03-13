@@ -1,6 +1,6 @@
 function showBatteryLevel(): void {
     brick.clearScreen();
-
+    
     const batteryLevel: number = brick.batteryLevel();
     brick.showString('Battery Level:', 2)
     brick.showString('' + batteryLevel, 3)
@@ -40,10 +40,24 @@ function showGyro(): void {
 
     for (let index = 0; index < s * 1000 / update; index++) {
         brick.clearScreen();
-        brick.showString('Gyro:', 2)
+        brick.showString('Gyro: ' + index, 2)
         brick.showString('' + hardware.readGyroAngle(), 3)
         pause(update);
     }
+    brick.clearScreen();
+}
+
+function showColor(): void {
+    const s = 10;
+    const update = 200;
+
+    for (let index = 0; index < s * 1000 / update; index++) {
+        brick.clearScreen();
+        brick.showString('Color: ' + index, 2)
+        brick.showString('' + hardware.readReflectedLight(), 3)
+        pause(update);
+    }
+    brick.clearScreen();
 }
 
 function showPorts(): void {
@@ -77,81 +91,68 @@ function PAUSE(): void {
 }
 
 function MotorA_reset(): void {
+    motors.mediumA.setBrake(true);
+    motors.mediumA.setPauseOnRun(false);
+
     motors.mediumA.reset();
 }
 
-function MotorA(action: string, n?: number): void {
-    motors.mediumA.setBrake(true);
-    motors.mediumA.run(10, n, MoveUnit.Degrees);
-    motors.mediumA.pauseUntilReady();
-    //motors.mediumA.pauseUntilStalled();
-
-//    pause(1 * 1000);
-
+function MotorA_stop(): void {
     motors.mediumA.setBrake(false);
     motors.mediumA.stop();
 }
 
+function MotorA(action: string, n?: number, s?: string): void {
+    motors.mediumA.run(10, n, MoveUnit.Degrees);
+
+    if (s != 'nowait') {
+        motors.mediumA.pauseUntilReady();
+        //motors.mediumA.pauseUntilStalled();
+    }
+}
+
 function programJJ(): void {
     robi.actionClean();
+    robi.actionStop(MotorA_stop);
     robi.actionCallback("reset", MotorA_reset);
-    robi.actionCallback("hoch", MotorA, 180);
+    robi.actionCallback("hoch", MotorA, 180, 'nowait');
     robi.actionFollowGyro(-90, -45);
     robi.actionCallback("runter", MotorA, -180);
     robi.actionFollowGyro(-90, 45);
     robi.startProgram();
 }
 
-function programDaniel(): void {
-    robi.actionClean();
-    robi.actionCallback("reset", MotorA_reset);
-    robi.actionFollowGyro(45, 20);
-    robi.actionFollowColor(25);
-    robi.actionFollowGyro(0, 15);
-    robi.actionCallback("hoch", MotorA, 90);
-    robi.actionFollowGyro(0, 30);
-    robi.actionCallback("runter", MotorA, -90);
-    robi.actionFollowGyro(0, 10);
-    robi.actionCallback("hoch", MotorA, 90);
-    robi.actionFollowGyro(0, 10);
-    //    robi.actionCallback("runter", MotorA, -90);
-    robi.actionFollowGyro(0, 20);
-    //    robi.actionCallback("hoch", MotorA, 180);
-    robi.actionCallback("hoch", MotorA, 90);
-    robi.actionFollowGyro(0, 5);
-    robi.actionCallback("hoch", MotorA, 270);
-    robi.actionFollowGyro(0, -5);
-    robi.actionCallback("hoch", MotorA, -90);
-    robi.startProgram();
-}
-
 function programDaniel2(): void {
     robi.actionClean();
+    robi.actionStop(MotorA_stop);
     robi.actionCallback("reset", MotorA_reset);
 
-    robi.actionFollowGyro(40, 47);
+    robi.actionFollowGyro(40, 48); // LKW 1
     robi.actionCallback("hoch", MotorA, 90);
-    robi.actionFollowGyro(40, 8);
-    robi.actionFollowGyro(0, 15);
-    robi.actionFollowColor(10);
-
+    robi.actionFollowGyro(40, 25);
+    robi.actionRotate(-40);
+    // robi.actionFollowGyro(0, 4);
+    robi.actionFollowColor(4, robi.FollowLineType.right);
     robi.actionCallback("runter", MotorA, -90);
-    robi.actionFollowGyro(0, 10);
+    // robi.actionFollowGyro(0, 13); // LKW 2
+    robi.actionFollowColor(13, robi.FollowLineType.right); // LKW 2
     robi.actionCallback("hoch", MotorA, 90);
-    robi.actionFollowColor(30);
-    //    robi.actionFollowGyro(0, 30);
-    robi.actionCallback("hoch", MotorA, 90);
+    // robi.actionFollowGyro(0, 23); // Brücke 1
+    robi.actionFollowColor(23, robi.FollowLineType.right); // Brücke 1
+    robi.actionCallback("hoch", MotorA, 90, 'nowait');
     robi.actionFollowGyro(0, 10);
-    robi.actionCallback("hoch", MotorA, 270);
-    robi.actionFollowGyro(0, -10);
-    robi.actionCallback("hoch", MotorA, -90);
+    robi.actionCallback("hoch", MotorA, 180, 'nowait');
+    robi.actionFollowGyro(0, -15); // Brücke 2
+    robi.actionFollowColor(75, robi.FollowLineType.right);
+    // Hubschrauber
     robi.startProgram();
 }
 
 function programNoah(): void {
     robi.actionClean();
+    robi.actionStop(MotorA_stop);
     robi.actionCallback("reset", MotorA_reset);
-robi.actionFollowGyro(45, 23);
+    robi.actionFollowGyro(45, 23);
     robi.actionFollowGyro(0, 15);
     // robi.actionFollowGyro(90, 10);
     // robi.actionRotate(-90, 45);
@@ -174,9 +175,10 @@ robi.actionFollowGyro(45, 23);
 
 function programDavid(): void {
     robi.actionClean();
+    robi.actionStop(MotorA_stop);
     robi.actionCallback("reset", MotorA_reset);
     robi.actionCallback("hoch", MotorA, 180);
-    robi.actionFollowColor(160);
+    robi.actionFollowColor(160, robi.FollowLineType.right);
     robi.actionFollowGyro(-90, 40);
     robi.actionRotate(0, -10);
     robi.actionCallback("runter", MotorA, -180);
@@ -203,8 +205,7 @@ function program2(): void {
 
 function program3(): void {
     robi.actionClean();
-    robi.actionMove(10)
-    robi.actionFollowColor(-160, robi.FollowType.left)
+    robi.actionFollowColor(160, robi.FollowLineType.right)
     robi.startProgram();
 }
 
@@ -293,8 +294,8 @@ function startup() {
         false,
         false
     )
-    hardware.setGyroSensor(sensors.gyro2, true);
-    hardware.setColorSensor(sensors.color1);
+    hardware.setGyroSensor(sensors.gyro2, false);
+    hardware.setColorSensor(sensors.color3);
 
     motors.mediumA.setRegulated(true);
 
@@ -304,23 +305,18 @@ function startup() {
     const menuTests = 'menuTests';
     const menuTools = 'menuTools';
     menu.newMenu('', 'gyroReset', hardware.gyroReset);
-    menu.newMenu('', 'LOGGER', null, 'logger');
+    menu.newMenu('', 'Jana und Judith', programJJ);
+//    menu.newMenu('', 'Daniel_2022-01-23', programDaniel);
+    menu.newMenu('', 'Daniel2_2022-02-20', programDaniel2);
+//    menu.newMenu('', 'Noah_2022-02-19', programNoah);
+//    menu.newMenu('', 'David_2022-02-19', programDavid);
+//    menu.newMenu('', 'program1', program1);
+//    menu.newMenu('', 'program2', program2);
+    menu.newMenu('', 'program3', program3);
+//    menu.newMenu('', 'program4', program4);
     menu.newMenu('', 'TESTS', null, menuTests);
     menu.newMenu('', 'TOOLS', null, menuTools);
-    menu.newMenu('', 'Jana und Judith', programJJ);
-    menu.newMenu('', 'Daniel_2022-01-23', programDaniel);
-    menu.newMenu('', 'Daniel2_2022-02-20', programDaniel2);
-    menu.newMenu('', 'Noah_2022-02-19', programNoah);
-    menu.newMenu('', 'David_2022-02-19', programDavid);
-    menu.newMenu('', 'program1', program1);
-    menu.newMenu('', 'program2', program2);
-    menu.newMenu('', 'program3', program3);
-    menu.newMenu('', 'program4', program4);
     menu.newMenu('', 'releaseBreaks', hardware.releaseBreaks);
-    menu.newMenu('', 'show Ports', showPorts);
-    menu.newMenu('', 'show Battery Level', showBatteryLevel);
-    menu.newMenu('', 'show Serial Number', showSerialNumber);
-    menu.newMenu('', 'showGyro', showGyro);
     menu.newMenu('', 'EXIT', brick.exitProgram);
 
     new menu.MenuType(menuTests);
@@ -329,6 +325,11 @@ function startup() {
     menu.newMenu(menuTests, 'TESTnormAngle', Helper.TESTnormAngle);
     menu.newMenu(menuTests, 'TESTspeed', Helper.TESTspeed);
     menu.newMenu(menuTests, 'TESThardware', TESThardware);
+    menu.newMenu(menuTests, 'showGyro', showGyro);
+    menu.newMenu(menuTests, 'showColor', showColor);
+    menu.newMenu(menuTests, 'show Ports', showPorts);
+    menu.newMenu(menuTests, 'show Battery Level', showBatteryLevel);
+    menu.newMenu(menuTests, 'show Serial Number', showSerialNumber);
 
     new menu.MenuType(menuTools);
     menu.newMenu(menuTools, 'ZURUECK', null, '');
