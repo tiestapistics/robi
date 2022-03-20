@@ -111,9 +111,30 @@ function MotorA(action: string, n?: number, s?: string): void {
     }
 }
 
+function MotorD_reset(): void {
+    motors.mediumD.setBrake(true);
+    motors.mediumD.setPauseOnRun(false);
+
+    motors.mediumD.reset();
+}
+
+function MotorD_stop(): void {
+    motors.mediumD.setBrake(false);
+    motors.mediumD.stop();
+}
+
+function MotorD(action: string, n?: number, s?: string): void {
+    motors.mediumD.run(10, n, MoveUnit.Degrees);
+
+    if (s != 'nowait') {
+        motors.mediumD.pauseUntilReady();
+        //motors.mediumD.pauseUntilStalled();
+    }
+}
+
 function programJJ(): void {
     robi.actionClean();
-    robi.actionStop(MotorA_stop);
+    robi.actionOnExit(MotorA_stop);
     robi.actionCallback("reset", MotorA_reset);
     robi.actionCallback("hoch", MotorA, 180, 'nowait');
     robi.actionFollowGyro(-90, -45);
@@ -122,9 +143,9 @@ function programJJ(): void {
     robi.startProgram();
 }
 
-function programDaniel2(): void {
+function programLKW(): void {
     robi.actionClean();
-    robi.actionStop(MotorA_stop);
+    robi.actionOnExit(MotorA_stop);
     robi.actionCallback("reset", MotorA_reset);
 
     robi.actionFollowGyro(40, 48); // LKW 1
@@ -143,45 +164,57 @@ function programDaniel2(): void {
     robi.actionFollowGyro(0, 10);
     robi.actionCallback("hoch", MotorA, 180, 'nowait');
     robi.actionFollowGyro(0, -15); // Brücke 2
-    robi.actionFollowColor(75, robi.FollowLineType.right);
+
     // Hubschrauber
+    robi.actionFollowColor(75, robi.FollowLineType.right);
+
     robi.startProgram();
 }
 
-function programNoah(): void {
+function programHubschrauber(): void {
     robi.actionClean();
-    robi.actionStop(MotorA_stop);
+    robi.actionOnExit(MotorA_stop);
     robi.actionCallback("reset", MotorA_reset);
-    robi.actionFollowGyro(45, 23);
-    robi.actionFollowGyro(0, 15);
-    // robi.actionFollowGyro(90, 10);
-    // robi.actionRotate(-90, 45);
-    // robi.actionFollowGyro(0, 10);
-    robi.actionFollowColor(10);
-    robi.actionCallback("hoch", MotorA, 90);
-    robi.actionFollowGyro(0, 30);
-    robi.actionCallback("runter", MotorA, -90);
-    robi.actionFollowGyro(0, 10);
-    robi.actionCallback("hoch", MotorA, 90);
+    robi.actionOnExit(MotorD_stop);
+    robi.actionCallback("reset", MotorD_reset);
+
+    robi.actionFollowColor(75, robi.FollowLineType.right);
+    robi.actionRotate(-20);
     robi.actionFollowGyro(0, 5);
-    robi.actionCallback("runter", MotorA, -90);
-    robi.actionFollowGyro(0, 20);
-    robi.actionCallback("hoch", MotorA, 180);
-    robi.actionFollowGyro(0, 10);
-    robi.actionCallback("hoch", MotorA, 270);
-    robi.actionCallback("hoch", MotorA, -90);
+    // Hubschrauber
+
+    robi.actionFollowGyro(20, -10);
+    robi.actionCallback("runter", MotorD, 135);
+    robi.actionFollowGyro(0, -13);
+    robi.actionStop();
+    robi.actionFollowGyro(0, -30);
+    // Frachtkran
+
+    robi.actionCallback("hoch", MotorD, -135);
+    robi.actionFollowGyro(0, -40);
+    robi.actionFollowGyro(-90, -10);
+    robi.actionFollowGyro(180, 30);
+
     robi.startProgram();
 }
 
 function programDavid(): void {
     robi.actionClean();
-    robi.actionStop(MotorA_stop);
+    robi.actionOnExit(MotorA_stop);
     robi.actionCallback("reset", MotorA_reset);
-    robi.actionCallback("hoch", MotorA, 180);
-    robi.actionFollowColor(160, robi.FollowLineType.right);
-    robi.actionFollowGyro(-90, 40);
-    robi.actionRotate(0, -10);
-    robi.actionCallback("runter", MotorA, -180);
+    robi.actionCallback("hoch", MotorA, 180, 'nowait');
+
+    robi.actionFollowGyro(0, 110);
+    robi.actionStop();
+
+    robi.actionCallback("runter", MotorA, -90, 'nowait');
+    robi.actionFollowGyro(-70, 20);
+    robi.actionStop();
+
+    robi.actionCallback("runter", MotorA, -90, 'nowait');
+    robi.actionFollowGyro(0, 20);
+    robi.actionStop();
+
     robi.startProgram();
 }
 
@@ -288,7 +321,7 @@ function startup() {
         motors.largeB,
         motors.largeC,
         6.24,
-        12,
+        10,
         false,
         true,
         false,
@@ -306,13 +339,12 @@ function startup() {
     const menuTools = 'menuTools';
     menu.newMenu('', 'gyroReset', hardware.gyroReset);
     menu.newMenu('', 'Jana und Judith', programJJ);
-//    menu.newMenu('', 'Daniel_2022-01-23', programDaniel);
-    menu.newMenu('', 'Daniel2_2022-02-20', programDaniel2);
-//    menu.newMenu('', 'Noah_2022-02-19', programNoah);
-//    menu.newMenu('', 'David_2022-02-19', programDavid);
+    menu.newMenu('', 'LKWs', programLKW);
+    menu.newMenu('', 'Hubschrauber', programHubschrauber);
+    menu.newMenu('', 'David_2022-03-17', programDavid);
 //    menu.newMenu('', 'program1', program1);
 //    menu.newMenu('', 'program2', program2);
-    menu.newMenu('', 'program3', program3);
+//    menu.newMenu('', 'program3', program3);
 //    menu.newMenu('', 'program4', program4);
     menu.newMenu('', 'TESTS', null, menuTests);
     menu.newMenu('', 'TOOLS', null, menuTools);

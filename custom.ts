@@ -853,8 +853,13 @@ namespace robi {
     let stopActions: (() => void)[] = [];
 
     //% block
-    export function actionStop(callbackFn: () => void): void {
+    export function actionOnExit(callbackFn: () => void): void {
         stopActions.push(callbackFn);
+    }
+
+    //% block
+    export function actionStop(): void {
+        actions.push(new MotorAction('stop', 0));
     }
 
     // ---
