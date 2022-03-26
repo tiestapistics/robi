@@ -273,20 +273,14 @@ namespace hardware {
     export function setColorSensor(colorSensor: sensors.ColorSensor, mode: ColorSensorMode = null): void {
         color = colorSensor;
 
-        // color.reset();
-
-        /*
-        if (mode == null) mode = ColorSensorMode.ReflectedLightIntensity;
+        if (mode == null) mode = ColorSensorMode.RgbRaw;
         color.setMode(mode);
-        */
-
-        // color.calibrateLight(1, 1)
     }
 
     //% block
-    export function readReflectedLight(): number {
-        if (color == null) return 0;
-        return color.light(LightIntensityMode.Reflected);
+    export function readColor(): number[] {
+        if (color == null) return [-1, -1, -1];
+        return color.rgbRaw();
     }
 
     // ---
@@ -732,15 +726,16 @@ namespace robi {
         public follow: FollowLineType;
 
         getSteering(): number {
-            const Faktor = 0.2
+            const Faktor = 0.2;
 
-            const Schwarz = 5
-            const Weiss = 75
+            const Schwarz = 30;
+            const Weiss = 100;
 
-            let Helligkeit = hardware.readReflectedLight()
-            Helligkeit = Math.min(Helligkeit, Weiss)
-            Helligkeit = Math.max(Helligkeit, Schwarz)
-            Helligkeit = (Helligkeit * 2 - Schwarz - Weiss) * (100 / (Weiss - Schwarz))
+            let RGB = hardware.readColor();
+            let Helligkeit = (RGB[0] + RGB[1] + RGB[2]) / 3;
+            Helligkeit = Math.min(Helligkeit, Weiss);
+            Helligkeit = Math.max(Helligkeit, Schwarz);
+            Helligkeit = (Helligkeit * 2 - Schwarz - Weiss) * (100 / (Weiss - Schwarz));
             debug('Helligkeit: ' + Helligkeit);
 
             if (this.stearing !== this.stearing) { // NaN
@@ -776,7 +771,7 @@ namespace robi {
         public gyroAngle: number;
 
         getSteering(): number {
-            const Faktor = 0.3
+            const Faktor = 0.2
 
             let gyroAngle = hardware.readGyroAngle();
 

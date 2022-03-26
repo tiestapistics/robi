@@ -53,8 +53,11 @@ function showColor(): void {
 
     for (let index = 0; index < s * 1000 / update; index++) {
         brick.clearScreen();
-        brick.showString('Color: ' + index, 2)
-        brick.showString('' + hardware.readReflectedLight(), 3)
+        brick.showString('' + index, 2)
+        let RGB = hardware.readColor();
+        brick.showString('Color R:' + RGB[0], 4);
+        brick.showString('Color G:' + RGB[1], 5);
+        brick.showString('Color B:' + RGB[2], 6);
         pause(update);
     }
     brick.clearScreen();
@@ -311,6 +314,15 @@ function TESThardware(): void {
     robi.startProgram();
 }
 
+function TESTcolor(): void {
+    robi.actionClean();
+
+    robi.actionFollowColor(150, robi.FollowLineType.right);
+
+    // ---
+
+    robi.startProgram();}
+
 // ---
 
 function startup() {
@@ -321,7 +333,7 @@ function startup() {
         motors.largeB,
         motors.largeC,
         6.24,
-        10,
+        12,
         false,
         true,
         false,
@@ -357,6 +369,7 @@ function startup() {
     menu.newMenu(menuTests, 'TESTnormAngle', Helper.TESTnormAngle);
     menu.newMenu(menuTests, 'TESTspeed', Helper.TESTspeed);
     menu.newMenu(menuTests, 'TESThardware', TESThardware);
+    menu.newMenu(menuTests, 'TESTcolor', TESTcolor);
     menu.newMenu(menuTests, 'showGyro', showGyro);
     menu.newMenu(menuTests, 'showColor', showColor);
     menu.newMenu(menuTests, 'show Ports', showPorts);
