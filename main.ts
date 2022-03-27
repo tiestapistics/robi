@@ -184,7 +184,7 @@ function Aufgaben(LKW_Bruecke: boolean = false, Kran: boolean = false, Parken: b
         robi.actionCallback("hoch", MotorA, 90, 'nowait');
         robi.actionFollowGyro(0, 10);
         robi.actionCallback("hoch", MotorA, 180, 'nowait');
-        robi.actionFollowGyro(0, -15); // Brücke 2
+        robi.actionFollowGyro(0, -13); // Brücke 2
         robi.actionCallback("hoch", MotorA, 180, 'nowait');
     } else {
         robi.actionCallback("hoch", MotorA, 180);
@@ -398,6 +398,18 @@ function startup() {
 }
 
 startup()
+
+sensors.touch1.onEvent(ButtonEvent.Bumped, function () {
+    robi.stop();
+    pause(300);
+    programJJ();
+})
+
+sensors.touch4.onEvent(ButtonEvent.Bumped, function () {
+    robi.stop();
+    pause(300);
+    programLKW();
+})
 
 forever(function () {
     robi.updateGyro()
