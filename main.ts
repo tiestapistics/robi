@@ -148,57 +148,102 @@ function programJJ(): void {
 
 function programLKW(): void {
     robi.actionClean();
-    robi.actionOnExit(MotorA_stop);
-    robi.actionCallback("reset", MotorA_reset);
 
-    robi.actionFollowGyro(40, 48); // LKW 1
-    robi.actionCallback("hoch", MotorA, 90);
-    robi.actionFollowGyro(40, 25);
-    robi.actionRotate(-40);
-    // robi.actionFollowGyro(0, 4);
-    robi.actionFollowColor(4, robi.FollowLineType.right);
-    robi.actionCallback("runter", MotorA, -90);
-    // robi.actionFollowGyro(0, 13); // LKW 2
-    robi.actionFollowColor(13, robi.FollowLineType.right); // LKW 2
-    robi.actionCallback("hoch", MotorA, 90);
-    // robi.actionFollowGyro(0, 23); // Brücke 1
-    robi.actionFollowColor(23, robi.FollowLineType.right); // Brücke 1
-    robi.actionCallback("hoch", MotorA, 90, 'nowait');
-    robi.actionFollowGyro(0, 10);
-    robi.actionCallback("hoch", MotorA, 180, 'nowait');
-    robi.actionFollowGyro(0, -15); // Brücke 2
-
-    // Hubschrauber
-    robi.actionFollowColor(75, robi.FollowLineType.right);
+    Aufgaben(true, true, true);
 
     robi.startProgram();
 }
 
 function programHubschrauber(): void {
     robi.actionClean();
+
+    Aufgaben(false, true, true);
+
+    robi.startProgram();
+}
+
+function Aufgaben(LKW_Bruecke: boolean = false, Kran: boolean = false, Parken: boolean = false): void {
     robi.actionOnExit(MotorA_stop);
     robi.actionCallback("reset", MotorA_reset);
     robi.actionOnExit(MotorD_stop);
     robi.actionCallback("reset", MotorD_reset);
 
-    robi.actionFollowColor(75, robi.FollowLineType.right);
+    if (LKW_Bruecke) {
+        robi.actionFollowGyro(40, 48); // LKW 1
+        robi.actionCallback("hoch", MotorA, 90);
+        robi.actionFollowGyro(40, 25);
+        robi.actionRotate(-40);
+        // robi.actionFollowGyro(0, 4);
+        robi.actionFollowColor(4, robi.FollowLineType.right);
+        robi.actionCallback("runter", MotorA, -90);
+        // robi.actionFollowGyro(0, 13); // LKW 2
+        robi.actionFollowColor(13, robi.FollowLineType.right); // LKW 2
+        robi.actionCallback("hoch", MotorA, 90);
+        // robi.actionFollowGyro(0, 23); // Brücke 1
+        robi.actionFollowColor(23, robi.FollowLineType.right); // Brücke 1
+        robi.actionCallback("hoch", MotorA, 90, 'nowait');
+        robi.actionFollowGyro(0, 10);
+        robi.actionCallback("hoch", MotorA, 180, 'nowait');
+        robi.actionFollowGyro(0, -15); // Brücke 2
+        robi.actionCallback("hoch", MotorA, 180, 'nowait');
+    } else {
+        robi.actionCallback("hoch", MotorA, 180);
+        robi.actionFollowGyro(45, 20);
+        robi.actionFollowColor(92, robi.FollowLineType.right);
+        robi.actionStop();
+    }
+
+    robi.actionCallback("stop", MotorA_stop);
+    
+    robi.actionFollowColor(65, robi.FollowLineType.right);
+    robi.actionFollowGyro(45, 10);
+    robi.actionFollowGyro(45, -3);
     robi.actionRotate(-20);
     robi.actionFollowGyro(0, 5);
     // Hubschrauber
 
-    robi.actionFollowGyro(20, -10);
-    robi.actionCallback("runter", MotorD, 135);
-    robi.actionFollowGyro(0, -13);
-    robi.actionStop();
-    robi.actionFollowGyro(0, -30);
-    // Frachtkran
+    if (Kran) {
+        robi.actionFollowGyro(20, -13);
+        robi.actionCallback("runter", MotorD, 130);
+        robi.actionCallback("stop", MotorD_stop);
+        robi.actionFollowGyro(0, -5);
+        robi.actionStop();
+        robi.actionFollowGyro(0, -34);
+        robi.actionStop();
+        // Frachtkran
 
-    robi.actionCallback("hoch", MotorD, -135);
-    robi.actionFollowGyro(0, -40);
-    robi.actionFollowGyro(-90, -10);
-    robi.actionFollowGyro(180, 30);
+        robi.actionFollowGyro(0, 15);
+        robi.actionCallback("hoch", MotorD, -130);
+        robi.actionCallback("stop", MotorD_stop);
+    } else {
+        Parken = false;
+    }
 
-    robi.startProgram();
+    if (Parken) {
+        robi.actionFollowGyro(0, -20);
+        robi.actionStop();
+        robi.actionFollowGyro(-45, -10);
+        robi.actionStop();
+        robi.actionFollowGyro(-45, -15);
+        robi.actionStop();
+        robi.actionFollowGyro(-45, -10);
+        robi.actionStop();
+        robi.actionFollowGyro(0, -15);
+        robi.actionStop();
+        robi.actionFollowGyro(0, 20);
+        robi.actionStop();
+
+        // langsam Fahren
+        robi.actionFollowGyro(0, -5);
+        robi.actionStop();
+        robi.actionFollowGyro(0, -5);
+        robi.actionStop();
+        robi.actionFollowGyro(0, -5);
+        robi.actionStop();
+        robi.actionFollowGyro(0, -5);
+        robi.actionStop();
+        robi.actionFollowGyro(0, -5);
+    }
 }
 
 function programDavid(): void {
@@ -218,42 +263,6 @@ function programDavid(): void {
     robi.actionFollowGyro(0, 20);
     robi.actionStop();
 
-    robi.startProgram();
-}
-
-function program1(): void {
-    robi.actionClean();
-    robi.actionMove(40)
-    robi.actionRotate(-45)
-    robi.actionMove(70)
-    robi.actionRotate(35)
-    robi.actionMove(70)
-    robi.startProgram();
-}
-
-function program2(): void {
-    robi.actionClean();
-    robi.actionFollowGyro(45, 40)
-    robi.actionFollowGyro(0, 70)
-    robi.actionFollowGyro(35, 70)
-    robi.startProgram();
-}
-
-function program3(): void {
-    robi.actionClean();
-    robi.actionFollowColor(160, robi.FollowLineType.right)
-    robi.startProgram();
-}
-
-function program4(): void {
-    robi.actionClean();
-    robi.actionFollowGyro(0, 50)
-    robi.actionFollowGyro(90, 50)
-    robi.actionFollowGyro(90, -50)
-    robi.actionFollowGyro(0, -50)
-
-    robi.actionFollowGyro(-90, 0)
-    robi.actionFollowGyro(0, 0)
     robi.startProgram();
 }
 
@@ -353,12 +362,8 @@ function startup() {
     menu.newMenu('', 'Jana und Judith', programJJ);
     menu.newMenu('', 'LKWs', programLKW);
     menu.newMenu('', 'Hubschrauber', programHubschrauber);
-    menu.newMenu('', 'David_2022-03-17', programDavid);
-//    menu.newMenu('', 'program1', program1);
-//    menu.newMenu('', 'program2', program2);
-//    menu.newMenu('', 'program3', program3);
-//    menu.newMenu('', 'program4', program4);
-    menu.newMenu('', 'TESTS', null, menuTests);
+    menu.newMenu('', 'David', programDavid);
+    menu.newMenu('', 'TEST', null, menuTests);
     menu.newMenu('', 'TOOLS', null, menuTools);
     menu.newMenu('', 'releaseBreaks', hardware.releaseBreaks);
     menu.newMenu('', 'EXIT', brick.exitProgram);

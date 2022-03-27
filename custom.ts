@@ -726,10 +726,12 @@ namespace robi {
         public follow: FollowLineType;
 
         getSteering(): number {
-            const Faktor = 0.2;
+            const Faktor = 0;
 
             const Schwarz = 30;
-            const Weiss = 100;
+            const Weiss = 90;
+
+            const MaxStearing = 25;
 
             let RGB = hardware.readColor();
             let Helligkeit = (RGB[0] + RGB[1] + RGB[2]) / 3;
@@ -742,7 +744,7 @@ namespace robi {
                 this.stearing = 0
             }
 
-            let newStearing: number = Helligkeit / (Weiss - Schwarz) * 35;
+            let newStearing: number = (Helligkeit - Schwarz) / (Weiss - Schwarz) * MaxStearing;
             newStearing *= (this.follow === FollowLineType.left) ? -1 : 1;
 
             if (this.targetSpeed < 0) newStearing *= -1;
