@@ -110,7 +110,6 @@ function MotorA(action: string, n?: number, s?: string): void {
 
     if (s != 'nowait') {
         motors.mediumA.pauseUntilReady();
-        //motors.mediumA.pauseUntilStalled();
     }
 }
 
@@ -131,7 +130,6 @@ function MotorD(action: string, n?: number, s?: string): void {
 
     if (s != 'nowait') {
         motors.mediumD.pauseUntilReady();
-        //motors.mediumD.pauseUntilStalled();
     }
 }
 
