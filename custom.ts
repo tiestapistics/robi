@@ -23,6 +23,18 @@ namespace Math {
     export function between(v: number, a: number, b: number): boolean {
         return (v >= a) && (v < b);
     }
+
+    export function arrayAvg(values: number[]): number {
+        return values.reduce(function (previousValue: number, currentValue: number, currentIndex: number) {
+            return previousValue + currentValue;
+        }, 0) / values.length;
+    }
+
+    export function arrayRms(values: number[]): number { // Root Mean Square
+        return Math.sqrt(values.reduce(function (previousValue: number, currentValue: number, currentIndex: number) {
+            return previousValue + (currentValue * currentValue);
+        }, 0) / values.length);
+    }
 }
 
 //% weight=100 color=#00ff00 icon=''
@@ -459,6 +471,7 @@ namespace robi {
     class MotorAction {
         protected name: string;
         protected actionSpeed: number;
+        protected speedLimit: number;
 
         public rawPos: number[];
         public offsetPos: number[];
@@ -481,6 +494,7 @@ namespace robi {
 
             this.name = name;
             this.actionSpeed = 0;
+            this.speedLimit = 100;
 
             this.rawPos = [0, 0];
             this.offsetPos = [0, 0];
@@ -525,6 +539,13 @@ namespace robi {
             brick.showString('   Speed: ' + Math.round(this.actionSpeed) + '/' + Math.round(this.currentSpeed[M1]) + '|' + Math.round(this.currentSpeed[M2]), 11)
         }
 
+        public setSpeedLimit(speed: number) {
+            speed = Math.min(speed, 100);
+            speed = Math.max(speed, hardware.motorConfig.minSpeed);
+
+            this.speedLimit = speed;
+        }
+
         public getActionSpeed(): number {
             return this.actionSpeed;
         }
@@ -542,6 +563,8 @@ namespace robi {
             let vOut: number = getNextSpeed();
 
             this.actionSpeed = Helper.speed(maxDistance, maxTotal, vIn, vMax, vOut);
+
+            this.actionSpeed = Math.min(this.actionSpeed, this.speedLimit);
 
             brick.showString('  Action: ' + Math.round(vIn) + '/' + vMax + '/' + vOut, 7);
 
@@ -724,32 +747,57 @@ namespace robi {
     class MotorActionFollowColor extends MotorAction {
         protected stearing: number;
         public follow: FollowLineType;
+        protected LightingPrevious: number[];
 
         getSteering(): number {
-            const Faktor = 0;
+            const Factor = 0.05;
 
-            const Schwarz = 30;
-            const Weiss = 90;
+            const PreviousValues = 3;
 
-            const MaxStearing = 25;
+            const Black = 40;
+            const White = 200;
+
+            const MaxStearing = 45/90*100;
 
             let RGB = hardware.readColor();
-            let Helligkeit = (RGB[0] + RGB[1] + RGB[2]) / 3;
-            Helligkeit = Math.min(Helligkeit, Weiss);
-            Helligkeit = Math.max(Helligkeit, Schwarz);
-            Helligkeit = (Helligkeit * 2 - Schwarz - Weiss) * (100 / (Weiss - Schwarz));
-            debug('Helligkeit: ' + Helligkeit);
+
+            let LightingCurrent = (RGB[0] + RGB[1] + RGB[2]) / 3;
+            LightingCurrent = Math.min(LightingCurrent, White);
+            LightingCurrent = Math.max(LightingCurrent, Black);
+
+            // debug('LightingCurrent: ' + Math.round(LightingCurrent));
+
+            if (!this.LightingPrevious) this.LightingPrevious = [];
+            this.LightingPrevious.push(LightingCurrent);
+            if (this.LightingPrevious.length >= PreviousValues) this.LightingPrevious.shift();
+            let Lighting = (LightingCurrent + Math.arrayAvg(this.LightingPrevious)) / 2;
+
+            Lighting = 100 * (Lighting * 2 - Black - White) / (White - Black);
+
+            debug('Lighting: ' + Math.round(Lighting));
+
+            // ---
+
+            if (Math.abs(Lighting) > 30) {
+                this.setSpeedLimit(Math.max(this.speedLimit / 1.02, 20));
+            }
+
+            if (Math.abs(Lighting) < 20) {
+                this.setSpeedLimit(this.speedLimit * 1.02);
+            }
+
+            // ---
 
             if (this.stearing !== this.stearing) { // NaN
                 this.stearing = 0
             }
 
-            let newStearing: number = (Helligkeit - Schwarz) / (Weiss - Schwarz) * MaxStearing;
+            let newStearing: number = Lighting / 100 * MaxStearing;
             newStearing *= (this.follow === FollowLineType.left) ? -1 : 1;
 
             if (this.targetSpeed < 0) newStearing *= -1;
 
-            this.stearing = (this.stearing * Faktor) - (newStearing * (1 - Faktor))
+            this.stearing = (this.stearing * Factor) - (newStearing * (1 - Factor))
             return this.stearing;
         }
 
@@ -773,7 +821,7 @@ namespace robi {
         public gyroAngle: number;
 
         getSteering(): number {
-            const Faktor = 0.2
+            const Factor = 0.2
 
             let gyroAngle = hardware.readGyroAngle();
 
@@ -791,7 +839,7 @@ namespace robi {
 
             if (this.targetSpeed < 0) newStearing *= -1;
 
-            this.stearing = (this.stearing * Faktor) - (newStearing * (1 - Faktor));
+            this.stearing = (this.stearing * Factor) - (newStearing * (1 - Factor));
             return this.stearing;
         }
 

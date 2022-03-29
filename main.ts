@@ -55,9 +55,9 @@ function showColor(): void {
         brick.clearScreen();
         brick.showString('' + index, 2)
         let RGB = hardware.readColor();
-        brick.showString('Color R:' + RGB[0], 4);
-        brick.showString('Color G:' + RGB[1], 5);
-        brick.showString('Color B:' + RGB[2], 6);
+        brick.showString('Color R: ' + RGB[0], 4);
+        brick.showString('Color G: ' + RGB[1], 5);
+        brick.showString('Color B: ' + RGB[2], 6);
         pause(update);
     }
     brick.clearScreen();
@@ -294,6 +294,8 @@ function TESThardware_check(action: string, n?: number) {
 function TESThardware(): void {
     robi.actionClean();
 
+    DEBUG = true;
+
     robi.actionCallback('motor1', TESThardware_check);
     robi.actionMove(10);
     robi.actionCallback('motor2', TESThardware_check, 10);
@@ -324,6 +326,8 @@ function TESThardware(): void {
 function TESTcolor(): void {
     robi.actionClean();
 
+    DEBUG = true;
+    
     robi.actionFollowColor(150, robi.FollowLineType.right);
 
     // ---
