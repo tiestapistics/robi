@@ -254,16 +254,19 @@ namespace hardware {
 
         brick.showString('Calibrating Gyro', 1)
 
-        for (let count = 0; count < 10; count++) {
-            brick.showString('ID: ' + gyro.id(), 3)
+        for (let i = 0; i < 2; i++) {
+            for (let count = 0; count < 10; count++) {
+                brick.showString('ID: ' + gyro.id(), 3)
+                brick.showString('Calibrate:' + (count + 1), 5)
 
-            brick.showString('Calibrate:' + (count + 1), 5)
-            gyro.calibrate();
+                pause(100);
+                gyro.calibrate();
 
-            brick.showString('Drift: ' + gyro.drift(), 7)
+                brick.showString('Drift: ' + gyro.drift(), 7)
 
-            if (gyro.isCalibrating()) continue;
-            if (gyro.drift() == 0) break;
+                if (gyro.isCalibrating()) continue;
+                if (gyro.drift() == 0) break;
+            }
         }
 
         music.stopAllSounds()
@@ -533,10 +536,12 @@ namespace robi {
                 }
             }
 
-            brick.showString('      M1: ' + Math.roundDecimal(this.targetPos[M1]) + '/' + Math.roundDecimal(this.currentPos[M1]), 8)
-            brick.showString('      M2: ' + Math.roundDecimal(this.targetPos[M2]) + '/' + Math.roundDecimal(this.currentPos[M2]), 9)
-            brick.showString('Steering: ' + Math.roundDecimal(this.getSteering()) + '/' + Math.roundDecimal(this.currentSteering), 10)
-            brick.showString('   Speed: ' + Math.round(this.actionSpeed) + '/' + Math.round(this.currentSpeed[M1]) + '|' + Math.round(this.currentSpeed[M2]), 11)
+            if (DEBUG) {
+                brick.showString('      M1: ' + Math.roundDecimal(this.targetPos[M1]) + '/' + Math.roundDecimal(this.currentPos[M1]), 8)
+                brick.showString('      M2: ' + Math.roundDecimal(this.targetPos[M2]) + '/' + Math.roundDecimal(this.currentPos[M2]), 9)
+                brick.showString('Steering: ' + Math.roundDecimal(this.getSteering()) + '/' + Math.roundDecimal(this.currentSteering), 10)
+                brick.showString('   Speed: ' + Math.round(this.actionSpeed) + '/' + Math.round(this.currentSpeed[M1]) + '|' + Math.round(this.currentSpeed[M2]), 11)
+            }
         }
 
         public setSpeedLimit(speed: number) {
@@ -566,7 +571,9 @@ namespace robi {
 
             this.actionSpeed = Math.min(this.actionSpeed, this.speedLimit);
 
-            brick.showString('  Action: ' + Math.round(vIn) + '/' + vMax + '/' + vOut, 7);
+            if (DEBUG) {
+                brick.showString('  Action: ' + Math.round(this.actionSpeed) + ' ' + Math.round(vIn) + '/' + Math.round(vMax) + '/' + Math.round(vOut), 7);
+            }
 
             return this.actionSpeed;
         }
@@ -685,8 +692,8 @@ namespace robi {
         }
 
         public updateMotor(): void {
-            this.lastSpeed = this.getSpeed();
             this.lastSteering = this.getSteering();
+            this.lastSpeed = this.getSpeed();
 
             this.directionCheck();
 
@@ -700,11 +707,12 @@ namespace robi {
     export function actionClean(): void {
         actions = [];
         stopActions = [];
+        DEBUG = false;
     }
 
     //% block
-    export function actionMove(distance: number): void {
-        let speed = Math.takeSign(distance) * 100;
+    export function actionMove(distance: number, maxSpeed: number = 100): void {
+        let speed = Math.takeSign(distance) * maxSpeed;
         actions.push(new MotorAction('Move', speed, [distance, distance]))
     }
 
@@ -738,8 +746,8 @@ namespace robi {
     }
 
     //% block
-    export function actionRotate(angle: number, distance: number = 0, rotate: number = 0): void {
-        let speed = Math.takeSign(distance) * 50;
+    export function actionRotate(angle: number, distance: number = 0, rotate: number = 0, maxSpeed: number = 50): void {
+        let speed = Math.takeSign(distance) * maxSpeed;
         let targetPos = prepareAngle(angle, distance, rotate)
         actions.push(new MotorAction('Rotate', speed, targetPos))
     }
@@ -750,7 +758,7 @@ namespace robi {
         protected LightingPrevious: number[];
 
         getSteering(): number {
-            const Factor = 0.05;
+            const Factor = 0;
 
             const PreviousValues = 3;
 
@@ -807,10 +815,10 @@ namespace robi {
     }
 
     //% block
-    export function actionFollowColor(distance: number, follow: FollowLineType = null): void {
+    export function actionFollowColor(distance: number, follow: FollowLineType = null, maxSpeed: number = 25): void {
         if (follow == null) follow = FollowLineType.right;
 
-        let speed = Math.takeSign(distance) * 25;
+        let speed = Math.takeSign(distance) * maxSpeed;
         let motorAction = new MotorActionFollowColor('FollowC', speed, [distance, distance]);
         motorAction.follow = follow;
         actions.push(motorAction)
@@ -849,8 +857,8 @@ namespace robi {
     }
 
     //% block
-    export function actionFollowGyro(gyroAngle: number, distance: number): void {
-        let speed = Math.takeSign(distance) * 40;
+    export function actionFollowGyro(gyroAngle: number, distance: number, maxSpeed: number = 40): void {
+        let speed = Math.takeSign(distance) * maxSpeed;
         let motorAction = new MotorActionFollowGyro('FollowG', speed, [distance, distance]);
         motorAction.gyroAngle = gyroAngle;
         actions.push(motorAction)

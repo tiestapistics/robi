@@ -167,27 +167,26 @@ function Aufgaben(LKW_Bruecke: boolean = false, Kran: boolean = false, Parken: b
     robi.actionCallback("reset", MotorD_reset);
 
     if (LKW_Bruecke) {
-        robi.actionFollowGyro(40, 48); // LKW 1
+        robi.actionFollowGyro(40, 43);
+        robi.actionStop();
+        robi.actionFollowGyro(40, 5); // LKW 1
         robi.actionCallback("hoch", MotorA, 90);
-        robi.actionFollowGyro(40, 25);
+        robi.actionFollowGyro(40, 23);
         robi.actionRotate(-40);
-        // robi.actionFollowGyro(0, 4);
         robi.actionFollowColor(4, robi.FollowLineType.right);
         robi.actionCallback("runter", MotorA, -90);
-        // robi.actionFollowGyro(0, 13); // LKW 2
-        robi.actionFollowColor(13, robi.FollowLineType.right); // LKW 2
+        robi.actionFollowColor(15, robi.FollowLineType.right); // LKW 2
         robi.actionCallback("hoch", MotorA, 90);
-        // robi.actionFollowGyro(0, 23); // Brücke 1
         robi.actionFollowColor(23, robi.FollowLineType.right); // Brücke 1
         robi.actionCallback("hoch", MotorA, 90, 'nowait');
         robi.actionFollowGyro(0, 10);
         robi.actionCallback("hoch", MotorA, 180, 'nowait');
-        robi.actionFollowGyro(0, -13); // Brücke 2
+        robi.actionFollowGyro(0, -17); // Brücke 2
         robi.actionCallback("hoch", MotorA, 180, 'nowait');
     } else {
         robi.actionCallback("hoch", MotorA, 180);
         robi.actionFollowGyro(45, 20);
-        robi.actionFollowColor(92, robi.FollowLineType.right);
+        robi.actionFollowColor(94, robi.FollowLineType.right);
         robi.actionStop();
     }
 
@@ -195,13 +194,15 @@ function Aufgaben(LKW_Bruecke: boolean = false, Kran: boolean = false, Parken: b
     
     robi.actionFollowColor(65, robi.FollowLineType.right);
     robi.actionFollowGyro(45, 10);
-    robi.actionFollowGyro(45, -3);
+    robi.actionFollowGyro(45, -5);
     robi.actionRotate(-20);
-    robi.actionFollowGyro(0, 5);
+    robi.actionFollowGyro(0, 7);
     // Hubschrauber
 
     if (Kran) {
-        robi.actionFollowGyro(20, -13);
+        robi.actionFollowGyro(20, -8);
+        robi.actionStop();
+        robi.actionFollowGyro(20, -5);
         robi.actionCallback("runter", MotorD, 130);
         robi.actionCallback("stop", MotorD_stop);
         robi.actionFollowGyro(0, -5);
@@ -232,15 +233,9 @@ function Aufgaben(LKW_Bruecke: boolean = false, Kran: boolean = false, Parken: b
         robi.actionStop();
 
         // langsam Fahren
-        robi.actionFollowGyro(0, -5);
+        robi.actionFollowGyro(0, -15);
         robi.actionStop();
-        robi.actionFollowGyro(0, -5);
-        robi.actionStop();
-        robi.actionFollowGyro(0, -5);
-        robi.actionStop();
-        robi.actionFollowGyro(0, -5);
-        robi.actionStop();
-        robi.actionFollowGyro(0, -5);
+        robi.actionFollowGyro(0, -10, 20);
     }
 }
 
@@ -326,13 +321,14 @@ function TESThardware(): void {
 function TESTcolor(): void {
     robi.actionClean();
 
-    DEBUG = true;
-    
+    DEBUG = false;
+
     robi.actionFollowColor(150, robi.FollowLineType.right);
 
     // ---
 
-    robi.startProgram();}
+    robi.startProgram();
+}
 
 // ---
 
