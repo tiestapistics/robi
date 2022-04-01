@@ -336,7 +336,7 @@ namespace hardware {
         }
 
         constructor(motorSync: motors.SynchedMotorPair, motorM1: motors.Motor, motorM2: motors.Motor, wheel: number, width: number, M1_M2_swap: boolean = false, M1_M2_direction: boolean = false, M1_inverse: boolean = false, M2_inverse: boolean = false) {
-            this.minSpeed = 5;
+            this.minSpeed = 10;
             this.speedChange = 2;
 
             this.motorSync = motorSync;

@@ -138,16 +138,16 @@ function programJJ(): void {
     robi.actionOnExit(MotorA_stop);
     robi.actionCallback("reset", MotorA_reset);
     robi.actionCallback("hoch", MotorA, 180, 'nowait');
-    robi.actionFollowGyro(-90, -45);
+    robi.actionFollowGyro(-90, -48);
     robi.actionCallback("runter", MotorA, -180);
-    robi.actionFollowGyro(-90, 45);
+    robi.actionFollowGyro(-90, 48);
     robi.startProgram();
 }
 
 function programLKW(): void {
     robi.actionClean();
 
-    Aufgaben(true, true, true);
+    Aufgaben(true, true, true, true);
 
     robi.startProgram();
 }
@@ -155,18 +155,23 @@ function programLKW(): void {
 function programHubschrauber(): void {
     robi.actionClean();
 
-    Aufgaben(false, true, true);
+    Aufgaben(false, true, true, true);
 
     robi.startProgram();
 }
 
-function Aufgaben(LKW_Bruecke: boolean = false, Kran: boolean = false, Parken: boolean = false): void {
+function Aufgaben(LKW: boolean = false, Bruecke: boolean = false, Kran: boolean = false, Parken: boolean = false): void {
     robi.actionOnExit(MotorA_stop);
     robi.actionCallback("reset", MotorA_reset);
     robi.actionOnExit(MotorD_stop);
     robi.actionCallback("reset", MotorD_reset);
 
-    if (LKW_Bruecke) {
+    if (!LKW || !Bruecke) {
+        robi.actionCallback("hoch", MotorA, 180, 'nowait');
+        robi.actionFollowGyro(45, 20);
+    }
+
+    if (LKW) {
         robi.actionFollowGyro(40, 43);
         robi.actionStop();
         robi.actionFollowGyro(40, 5); // LKW 1
@@ -176,7 +181,13 @@ function Aufgaben(LKW_Bruecke: boolean = false, Kran: boolean = false, Parken: b
         robi.actionFollowColor(4, robi.FollowLineType.right);
         robi.actionCallback("runter", MotorA, -90);
         robi.actionFollowColor(15, robi.FollowLineType.right); // LKW 2
-        robi.actionCallback("hoch", MotorA, 90);
+        robi.actionCallback("hoch", MotorA, 90, 'nowait');
+    } else {
+        robi.actionFollowColor(94-(23+10-17) + 1, robi.FollowLineType.right);
+        robi.actionCallback("runter", MotorA, -90, 'nowait');
+    }
+
+    if (Bruecke) {
         robi.actionFollowColor(23, robi.FollowLineType.right); // Brücke 1
         robi.actionCallback("hoch", MotorA, 90, 'nowait');
         robi.actionFollowGyro(0, 10);
@@ -184,9 +195,7 @@ function Aufgaben(LKW_Bruecke: boolean = false, Kran: boolean = false, Parken: b
         robi.actionFollowGyro(0, -17); // Brücke 2
         robi.actionCallback("hoch", MotorA, 180, 'nowait');
     } else {
-        robi.actionCallback("hoch", MotorA, 180);
-        robi.actionFollowGyro(45, 20);
-        robi.actionFollowColor(94, robi.FollowLineType.right);
+        robi.actionFollowColor((23 + 10 - 17), robi.FollowLineType.right);
         robi.actionStop();
     }
 
@@ -194,9 +203,9 @@ function Aufgaben(LKW_Bruecke: boolean = false, Kran: boolean = false, Parken: b
     
     robi.actionFollowColor(65, robi.FollowLineType.right);
     robi.actionFollowGyro(45, 10);
-    robi.actionFollowGyro(45, -5);
+    robi.actionFollowGyro(45, -4);
     robi.actionRotate(-20);
-    robi.actionFollowGyro(0, 7);
+    robi.actionFollowGyro(0, 8);
     // Hubschrauber
 
     if (Kran) {
@@ -223,19 +232,20 @@ function Aufgaben(LKW_Bruecke: boolean = false, Kran: boolean = false, Parken: b
         robi.actionStop();
         robi.actionFollowGyro(-45, -10);
         robi.actionStop();
-        robi.actionFollowGyro(-45, -15);
+        robi.actionFollowGyro(-45, -14);
         robi.actionStop();
-        robi.actionFollowGyro(-45, -10);
-        robi.actionStop();
-        robi.actionFollowGyro(0, -15);
-        robi.actionStop();
-        robi.actionFollowGyro(0, 20);
+        robi.actionFollowGyro(0, -12);
         robi.actionStop();
 
         // langsam Fahren
-        robi.actionFollowGyro(0, -15);
+        robi.actionFollowGyro(0, -10, 20);
         robi.actionStop();
         robi.actionFollowGyro(0, -10, 20);
+        robi.actionStop();
+        robi.actionFollowGyro(0, -10, 20);
+        robi.actionStop();
+        robi.actionFollowGyro(0, -10, 20);
+        robi.actionStop();
     }
 }
 
@@ -406,7 +416,8 @@ sensors.touch1.onEvent(ButtonEvent.Bumped, function () {
 sensors.touch4.onEvent(ButtonEvent.Bumped, function () {
     robi.stop();
     pause(300);
-    programLKW();
+    // programLKW();
+    programHubschrauber();
 })
 
 forever(function () {
