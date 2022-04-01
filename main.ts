@@ -1,91 +1,3 @@
-function showBatteryLevel(): void {
-    brick.clearScreen();
-    
-    const batteryLevel: number = brick.batteryLevel();
-    brick.showString('Battery Level:', 2)
-    brick.showString('' + batteryLevel, 3)
-
-    const voltage = brick.batteryInfo(BatteryProperty.Voltage);
-    brick.showString('Voltage:' + Math.roundDecimal(voltage) + ' V', 5)
-
-    const current = brick.batteryInfo(BatteryProperty.Current);
-    brick.showString('Current:' + Math.roundDecimal(current) + ' mA', 6)
-}
-
-function showSerialNumber(): void {
-    brick.clearScreen();
-
-    const firmwareVersion: string = control.deviceFirmwareVersion();
-    brick.showString('Firmware Version:', 2)
-    brick.showString('' + firmwareVersion, 3)
-
-    const serialNumber: number = control.deviceSerialNumber();
-    brick.showString('Device Serial Number:', 4)
-    brick.showString('' + serialNumber, 5)
-
-    /*
-    const longSerialNumber: string = control.deviceLongSerialNumber().toString();
-    brick.showString('Long Device Serial Number:', 6)
-    brick.showString('' + longSerialNumber, 7)
-
-    const dalVersion: string = control.deviceDalVersion();
-    brick.showString('DAL Version:', 8)
-    brick.showString('' + dalVersion, 9)
-    */
-}
-
-function showGyro(): void {
-    const s = 10;
-    const update = 200;
-
-    for (let index = 0; index < s * 1000 / update; index++) {
-        brick.clearScreen();
-        brick.showString('Gyro: ' + index, 2)
-        brick.showString('' + hardware.readGyroAngle(), 3)
-        pause(update);
-    }
-    brick.clearScreen();
-}
-
-function showColor(): void {
-    const s = 10;
-    const update = 200;
-
-    for (let index = 0; index < s * 1000 / update; index++) {
-        brick.clearScreen();
-        brick.showString('' + index, 2)
-        let RGB = hardware.readColor();
-        brick.showString('Color R: ' + RGB[0], 4);
-        brick.showString('Color G: ' + RGB[1], 5);
-        brick.showString('Color B: ' + RGB[2], 6);
-        pause(update);
-    }
-    brick.clearScreen();
-}
-
-function showPorts(): void {
-    robi.setLive(false);
-    brick.showPorts()
-}
-
-function TEST1(): void {
-    robi.actionMove(40)
-}
-
-function TEST2(): void {
-    robi.actionMove(-40)
-}
-
-function TEST3(): void {
-    robi.actionRotate(180, 0, -100)
-}
-
-function TEST4(): void {
-    robi.actionRotate(-180)
-}
-
-// ---
-
 let count = 1;
 function PAUSE(): void {
     brick.clearScreen()
@@ -249,26 +161,6 @@ function Aufgaben(LKW: boolean = false, Bruecke: boolean = false, Kran: boolean 
     }
 }
 
-function programDavid(): void {
-    robi.actionClean();
-    robi.actionOnExit(MotorA_stop);
-    robi.actionCallback("reset", MotorA_reset);
-    robi.actionCallback("hoch", MotorA, 180, 'nowait');
-
-    robi.actionFollowGyro(0, 110);
-    robi.actionStop();
-
-    robi.actionCallback("runter", MotorA, -90, 'nowait');
-    robi.actionFollowGyro(-70, 20);
-    robi.actionStop();
-
-    robi.actionCallback("runter", MotorA, -90, 'nowait');
-    robi.actionFollowGyro(0, 20);
-    robi.actionStop();
-
-    robi.startProgram();
-}
-
 // ---
 
 let TESThardware_check_a: number;
@@ -365,14 +257,11 @@ function startup() {
     motors.mediumA.stop();
 
     const menuTests = 'menuTests';
-    const menuTools = 'menuTools';
     menu.newMenu('', 'gyroReset', hardware.gyroReset);
     menu.newMenu('', 'Jana und Judith', programJJ);
     menu.newMenu('', 'LKWs', programLKW);
     menu.newMenu('', 'Hubschrauber', programHubschrauber);
-    menu.newMenu('', 'David', programDavid);
     menu.newMenu('', 'TEST', null, menuTests);
-    menu.newMenu('', 'TOOLS', null, menuTools);
     menu.newMenu('', 'releaseBreaks', hardware.releaseBreaks);
     menu.newMenu('', 'EXIT', brick.exitProgram);
 
@@ -383,20 +272,6 @@ function startup() {
     menu.newMenu(menuTests, 'TESTspeed', Helper.TESTspeed);
     menu.newMenu(menuTests, 'TESThardware', TESThardware);
     menu.newMenu(menuTests, 'TESTcolor', TESTcolor);
-    menu.newMenu(menuTests, 'showGyro', showGyro);
-    menu.newMenu(menuTests, 'showColor', showColor);
-    menu.newMenu(menuTests, 'show Ports', showPorts);
-    menu.newMenu(menuTests, 'show Battery Level', showBatteryLevel);
-    menu.newMenu(menuTests, 'show Serial Number', showSerialNumber);
-
-    new menu.MenuType(menuTools);
-    menu.newMenu(menuTools, 'ZURUECK', null, '');
-    menu.newMenu(menuTools, 'LOGGER', null, 'logger');
-    menu.newMenu(menuTools, 'TEST1', TEST1);
-    menu.newMenu(menuTools, 'TEST2', TEST2);
-    menu.newMenu(menuTools, 'TEST3', TEST3);
-    menu.newMenu(menuTools, 'TEST4', TEST4);
-    menu.newMenu(menuTools, 'startProgram', robi.startProgram);
 
     brick.clearScreen()
     menu.setMenu('');
