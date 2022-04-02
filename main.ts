@@ -64,10 +64,18 @@ function programLKW(): void {
     robi.startProgram();
 }
 
-function programHubschrauber(): void {
+function programBruecke(): void {
     robi.actionClean();
 
     Aufgaben(false, true, true, true);
+
+    robi.startProgram();
+}
+
+function programHubschrauber(): void {
+    robi.actionClean();
+
+    Aufgaben(false, false, true, true);
 
     robi.startProgram();
 }
@@ -78,10 +86,7 @@ function Aufgaben(LKW: boolean = false, Bruecke: boolean = false, Kran: boolean 
     robi.actionOnExit(MotorD_stop);
     robi.actionCallback("reset", MotorD_reset);
 
-    if (!LKW || !Bruecke) {
-        robi.actionCallback("hoch", MotorA, 180, 'nowait');
-        robi.actionFollowGyro(45, 20);
-    }
+    let ohneBruecke = 15 + 23 + 10 - 17;
 
     if (LKW) {
         robi.actionFollowGyro(40, 43);
@@ -91,28 +96,35 @@ function Aufgaben(LKW: boolean = false, Bruecke: boolean = false, Kran: boolean 
         robi.actionFollowGyro(40, 23);
         robi.actionRotate(-40);
         robi.actionFollowColor(4, robi.FollowLineType.right);
-        robi.actionCallback("runter", MotorA, -90);
-        robi.actionFollowColor(15, robi.FollowLineType.right); // LKW 2
-        robi.actionCallback("hoch", MotorA, 90, 'nowait');
     } else {
-        robi.actionFollowColor(94-(23+10-17) + 1, robi.FollowLineType.right);
-        robi.actionCallback("runter", MotorA, -90, 'nowait');
+        robi.actionCallback("hoch", MotorA, 90, 'nowait');
+        robi.actionFollowGyro(45, 20);
+        robi.actionFollowColor(94 - ohneBruecke + 1, robi.FollowLineType.right);
     }
 
     if (Bruecke) {
+        robi.actionCallback("runter", MotorA, -90);
+        robi.actionFollowColor(15, robi.FollowLineType.right); // LKW 2
+        robi.actionCallback("hoch", MotorA, 90, 'nowait');
+
+        // ---
+
         robi.actionFollowColor(23, robi.FollowLineType.right); // Brücke 1
         robi.actionCallback("hoch", MotorA, 90, 'nowait');
         robi.actionFollowGyro(0, 10);
         robi.actionCallback("hoch", MotorA, 180, 'nowait');
         robi.actionFollowGyro(0, -17); // Brücke 2
-        robi.actionCallback("hoch", MotorA, 180, 'nowait');
+        robi.actionCallback("hoch", MotorA, 180);
     } else {
-        robi.actionFollowColor((23 + 10 - 17), robi.FollowLineType.right);
+        robi.actionCallback("hoch", MotorA, 90, 'nowait');
+        robi.actionFollowColor(ohneBruecke, robi.FollowLineType.right);
         robi.actionStop();
     }
 
     robi.actionCallback("stop", MotorA_stop);
-    
+
+    // ---
+
     robi.actionFollowColor(65, robi.FollowLineType.right);
     robi.actionFollowGyro(45, 10);
     robi.actionFollowGyro(45, -4);
@@ -154,6 +166,9 @@ function Aufgaben(LKW: boolean = false, Bruecke: boolean = false, Kran: boolean 
         robi.actionStop();
         robi.actionFollowGyro(0, -10, 20);
         robi.actionStop();
+        robi.actionFollowGyro(0, -10, 20);
+        robi.actionStop();
+        robi.actionCallback("hoch", MotorA, 180, 'nowait');
         robi.actionFollowGyro(0, -10, 20);
         robi.actionStop();
         robi.actionFollowGyro(0, -10, 20);
@@ -260,6 +275,7 @@ function startup() {
     menu.newMenu('', 'gyroReset', hardware.gyroReset);
     menu.newMenu('', 'Jana und Judith', programJJ);
     menu.newMenu('', 'LKWs', programLKW);
+    menu.newMenu('', 'Bruecke', programBruecke);
     menu.newMenu('', 'Hubschrauber', programHubschrauber);
     menu.newMenu('', 'TEST', null, menuTests);
     menu.newMenu('', 'releaseBreaks', hardware.releaseBreaks);
@@ -292,7 +308,8 @@ sensors.touch4.onEvent(ButtonEvent.Bumped, function () {
     robi.stop();
     pause(300);
     // programLKW();
-    programHubschrauber();
+    programBruecke();
+    // programHubschrauber();
 })
 
 forever(function () {
